@@ -36,7 +36,7 @@
 
 ## 注意
 
-**1. 请不要手动添加 <meta name="viewpoint">**
+**1. 请不要手动添加 \<meta name="viewpoint"\>**
 
 **2. 当前 meta 需要在移动端或 chrome F12 mobile模式下生效**
 
