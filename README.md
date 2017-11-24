@@ -25,6 +25,13 @@
   </script>
   <script src="path/to/meta-flexible.umd.js"></script>
 ```
+
+## 注意
+
+**1. 请不要手动添加 <meta name="viewpoint">**
+
+**2. 当前 meta 需要在移动端或 chrome F12 mobile模式下生效**
+
 ## API
 
 当前工具使用以下默认值配置, 开发者可在引用当前工具前通过 `window.__META_FLEXIBLE__` 修改部分参数.
