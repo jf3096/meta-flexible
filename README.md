@@ -2,6 +2,10 @@
 
 > 一个用于降级 meta target density dpi 的工具
 
+通过 meta target density dpi 能够直接使用 px 进行页面开发, 并最终自动适配移动端. 但考虑到该方案在2012年被谷歌宣布弃用, 但依旧能够完美兼容
+手机和平板, Android (2.3+), IOS 8+, 苹果手机4-7plus, 微信, UC, Android 原生浏览器, IOS Safari (上述明确版本项已测试). 但为了防止有
+一天该方案被正式移除, 该工具通过其他手段自动降级支持.
+
 ## 使用
 
 ```bash
