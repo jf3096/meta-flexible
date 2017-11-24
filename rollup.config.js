@@ -3,9 +3,9 @@ import eslint from 'rollup-plugin-eslint';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import uglify from 'rollup-plugin-uglify';
+import size from 'rollup-plugin-filesize';
 
 import pkg from './package.json';
-
 
 const plugins = [
   resolve(), // so Rollup can find `ms`
@@ -17,30 +17,40 @@ const plugins = [
   }),
   babel({
     exclude: 'node_modules/**',
-  })
+  }),
+  size()
 ];
 
 export default [
   {
     input: 'src/index.js',
+    sourcemap: true,
     output: {
       file: pkg.browser,
       format: 'umd'
     },
+    plugins
+  },
+  {
+    input: 'src/index.js',
+    sourcemap: true,
+    output: {
+      file: pkg['browser-min'],
+      format: 'umd'
+    },
     plugins: [
       ...plugins,
-      (process.env.NODE_ENV === 'production' && uglify())
+      uglify(),
     ]
   },
   {
     input: 'src/index.js',
-    plugins: [
-      ...plugins,
-    ],
+    sourcemap: true,
     output: [
       {file: pkg.main, format: 'cjs'},
       {file: pkg.module, format: 'es'}
-    ]
+    ],
+    plugins
   }
-]
+];
 

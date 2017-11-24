@@ -5,6 +5,7 @@
   "main": "lib/meta-flexible.cjs.js",
   "module": "lib/meta-flexible.esm.js",
   "browser": "lib/meta-flexible.umd.js",
+  "browser-min": "lib/meta-flexible.umd.min.js",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch"
@@ -33,6 +34,7 @@
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^7.0.0",
     "rollup-plugin-eslint": "^3.0.0",
+    "rollup-plugin-filesize": "^1.5.0",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-postcss": "^0.2.0",
     "rollup-plugin-replace": "^1.1.1",
