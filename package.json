@@ -1,0 +1,42 @@
+{
+  "name": "meta-flexible",
+  "version": "0.0.1",
+  "description": "A plugin used to fallback target density dpi",
+  "main": "lib/meta-flexible.cjs.js",
+  "module": "lib/meta-flexible.esm.js",
+  "browser": "lib/meta-flexible.umd.js",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch"
+  },
+  "keywords": [
+    "meta",
+    "flexible",
+    "responsive",
+    "html5"
+  ],
+  "files": [
+    "lib/meta-flexible.cjs.js"
+  ],
+  "author": "Ailun She <529360897@qq.com> (@Allen)",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
+    "babel-plugin-transform-object-assign": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.11.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "rollup": "^0.51.8",
+    "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-commonjs": "^7.0.0",
+    "rollup-plugin-eslint": "^3.0.0",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-postcss": "^0.2.0",
+    "rollup-plugin-replace": "^1.1.1",
+    "rollup-plugin-uglify": "^1.0.1",
+    "rollup-watch": "^3.0.0"
+  }
+}
