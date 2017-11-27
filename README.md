@@ -58,6 +58,13 @@
   };
 ```
 
+## ChangeLog
+
+## 0.0.2 (2017-10-16)
+
+* feat: 默认不启用 set body font size 方案
+* feat: 加入仅对移动端生效的检测
+
 ## 作者
 Ailun She
 

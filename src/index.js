@@ -17,21 +17,23 @@
   };
 
   /**
-   * 默认
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: (function(*): string), getMetaViewpointScaleRatioContent: (function(*): string), plans: [null,null], Plan: {TargetDensityDpi: number, ScaleRatio: number}}}
+   * 默认options
+   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: (function(*): string), getMetaViewpointScaleRatioContent: (function(*): string), isMobile: (function(): boolean), plans: [null,null], Plan: {TargetDensityDpi: number, ScaleRatio: number}, enableBodyFontSize: boolean}}
    */
   const defaultMetaFlexibleOptions = {
     namespace: 'meta-flexible',
     designViewpoint: 750,
     getMetaViewpointTargetDensityDpiContent: (designViewpoint) => `width=${designViewpoint}, target-densitydpi=device-dpi, user-scalable=no`,
     getMetaViewpointScaleRatioContent: (scale) => `width=device-width, initial-scale=${scale}, maximum-scale=${scale}, minimum-scale=${scale}, user-scalable=no`,
+    isMobile: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
     plans: [Plan.TargetDensityDpi, Plan.ScaleRatio],
-    Plan
+    Plan,
+    enableBodyFontSize: false
   };
 
   /**
    * 合并外部API Options
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: (function(*): string), getMetaViewpointScaleRatioContent: (function(*): string), plans: [null,null], Plan: {TargetDensityDpi: number, ScaleRatio: number}}}
+   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: (function(*): string), getMetaViewpointScaleRatioContent: (function(*): string), isMobile: (function(): boolean), plans: [null,null], Plan: {TargetDensityDpi: number, ScaleRatio: number}, enableBodyFontSize: boolean}}
    */
   const metaFlexibleOptions = {...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions};
 
@@ -57,7 +59,7 @@
    * 错误前缀
    * @type {string}
    */
-  const ERROR_PREFIX = NAMESPACE;
+  const LOG_PREFIX = NAMESPACE;
 
   /**
    * 设计稿大小
@@ -85,12 +87,24 @@
 
   /**
    * 条件判错函数
-   * @param condition
+   * @param condition 错误条件
    * @param message
    */
   function invariant(condition, message) {
     if (!condition) {
-      throw new Error(`${ERROR_PREFIX}: ${message}`);
+      throw new Error(`${LOG_PREFIX}: ${message}`);
+    }
+  }
+
+  /**
+   * 条件警告函数
+   * @param condition 警告条件
+   * @param message 警告信息
+   */
+  function warn(condition, message) {
+    if (!condition) {
+      // eslint-disable-next-line no-console
+      console.warn(`${LOG_PREFIX}: ${message}`);
     }
   }
 
@@ -302,16 +316,25 @@
   }
 
   (function () {
+
+    const {enableBodyFontSize, isMobile} = metaFlexibleOptions;
+
+    if (!isMobile()) {
+      warn(false, `请确保在移动端下使用${NAMESPACE}`);
+      return;
+    }
+
     /**
      * 校验判断 meta viewpoint, 禁止开发者手动添加
      */
     invariantMetaViewPoint();
 
-    /**
-     * 立即自执行, 设置 body font size
-     */
-    setBodyFontSize();
-
+    if (enableBodyFontSize) {
+      /**
+       * 立即自执行, 设置 body font size
+       */
+      setBodyFontSize();
+    }
     /**
      * 直接触发页面
      */
