@@ -8,7 +8,8 @@
   "browser-min": "lib/meta-flexible.umd.min.js",
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c --watch"
+    "dev": "rollup -c --watch",
+    "precommit": "npm run build"
   },
   "keywords": [
     "meta",
