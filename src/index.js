@@ -220,7 +220,7 @@
            * 如果所有方案失效, 直接抛异常, 用于上报, 但保留最后一种方案
            */
           if (plans.length <= 0) {
-            setTimeout(() => invariant(false, `${NAMESPACE}所使用的所有方案失效, 暂用最后一种方案兜底`));
+            setTimeout(() => invariant(false, `${NAMESPACE}所使用的所有方案失效, 暂用最后一种方案兜底`), 0);
             break;
           }
           /**
