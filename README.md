@@ -20,6 +20,10 @@
   import 'meta-flexble';
 ```
 
+```html
+  <script src="//zhcdn01.xoyo.com/xassets/lib/meta-flexible/stable/meta-flexible.min.js"></script>
+```
+
 或直接引用
 ```html
   <script>
