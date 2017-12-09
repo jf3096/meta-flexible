@@ -365,4 +365,4 @@
      */
     tryAddHairLine();
   }());
-}(window, document, window.__META_FLEXIBLE__ = window.__META_FLEXIBLE__ = {}));
+}(window, document, window.__META_FLEXIBLE__ = window.__META_FLEXIBLE__ || {}));
