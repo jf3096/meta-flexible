@@ -83,7 +83,7 @@
   /**
    * plan 列表
    */
-  const plans = [Plan.TargetDensityDpi, Plan.ScaleRatio];
+  const plans = metaFlexibleOptions.plans;
 
   /**
    * 条件判错函数
