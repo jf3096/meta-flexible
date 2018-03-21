@@ -4,7 +4,9 @@
    */
   const Plan = {
     TargetDensityDpi: 0,
-    ScaleRatio: 1
+    ScaleRatio: 1,
+    Rem: 2,
+    Viewpoint: 3
   };
 
   /**
@@ -18,7 +20,7 @@
 
   /**
    * 默认options
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: (function(*): string), getMetaViewpointScaleRatioContent: (function(*): string), isMobile: (function(): boolean), plans: [null,null], Plan: {TargetDensityDpi: number, ScaleRatio: number}, enableBodyFontSize: boolean}}
+   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: function(*): string, getMetaViewpointScaleRatioContent: function(*): string, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number}, enableBodyFontSize: boolean, remRatio: number, remUpperResizeLimit: number}}
    */
   const defaultMetaFlexibleOptions = {
     namespace: 'meta-flexible',
@@ -28,12 +30,14 @@
     isMobile: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
     plans: [Plan.TargetDensityDpi, Plan.ScaleRatio],
     Plan,
-    enableBodyFontSize: false
+    enableBodyFontSize: false,
+    remRatio: 10,
+    remUpperResizeLimit: 540
   };
 
   /**
    * 合并外部API Options
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: (function(*): string), getMetaViewpointScaleRatioContent: (function(*): string), isMobile: (function(): boolean), plans: [null,null], Plan: {TargetDensityDpi: number, ScaleRatio: number}, enableBodyFontSize: boolean}}
+   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: function(*): string, getMetaViewpointScaleRatioContent: function(*): string, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number}, enableBodyFontSize: boolean, remRatio: number, remUpperResizeLimit: number}}
    */
   const metaFlexibleOptions = {...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions};
 
@@ -84,6 +88,16 @@
    * plan 列表
    */
   const plans = metaFlexibleOptions.plans;
+
+  /**
+   * rem的基准值, 如 remRatio = 10, 即在750px设计稿中, 1rem = 75px
+   */
+  const remRatio = metaFlexibleOptions.remRatio;
+
+  /**
+   * rem 页面宽度变化最大上限, 当大于 remUpperResizeLimit, 根节点 font-size 将不再变化
+   */
+  const remUpperResizeLimit = metaFlexibleOptions.remUpperResizeLimit;
 
   /**
    * 条件判错函数
@@ -185,8 +199,15 @@
    */
   const setMetaViewpointScaleRatio = (() => {
     let metaViewpoint;
+    /**
+     * 缓存先前scale值
+     */
+    let prevScale;
     return (scale) => {
-      metaViewpoint = createOrUpdateMetaViewpoint(metaViewpoint, getMetaViewpointScaleRatioContent(scale));
+      if (prevScale !== scale) {
+        prevScale = scale;
+        metaViewpoint = createOrUpdateMetaViewpoint(metaViewpoint, getMetaViewpointScaleRatioContent(scale));
+      }
     };
   })();
 
@@ -254,9 +275,47 @@
       case Plan.ScaleRatio:
         scaleRatioImpl();
         break;
+      case Plan.Rem:
+        remImpl();
+        break;
+      case Plan.Viewpoint:
+        viewpointImpl();
+        break;
       default:
         invariant(false, `未知 meta-flexible 方案, plan = ${currentPlan}`);
     }
+  }
+
+  /**
+   * rem 方案具体实现
+   */
+  function remImpl() {
+    setMetaViewpointScaleRatio(1);
+    refreshRem();
+  }
+
+  /**
+   * viewpoint 方案具体实现
+   */
+  function viewpointImpl() {
+    setMetaViewpointScaleRatio(1);
+    refreshRem(false);
+  }
+
+  /**
+   * 刷新Rem
+   * @param hasResizeLimit
+   */
+  function refreshRem(hasResizeLimit = true) {
+    let width = docEl.clientWidth;
+    if (hasResizeLimit) {
+      if (width > remUpperResizeLimit) {
+        width = remUpperResizeLimit;
+      }
+    }
+    const rem = width / remRatio;
+    docEl.style.fontSize = +`${rem}px`;
+    apiMetaFlexibleOptions.rem = rem;
   }
 
   /**
