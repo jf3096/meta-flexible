@@ -64,6 +64,10 @@
 
 ## ChangeLog
 
+## 0.0.3 (2018-01-09)
+
+* feat: 设置 viewport-fit=cover 以兼容 iPhone X 全面屏“刘海”的显示
+
 ## 0.0.2 (2017-11-27)
 
 * feat: 默认不启用 set body font size 方案
