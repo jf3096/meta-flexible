@@ -7,8 +7,7 @@
 一天该方案被正式移除, 该工具通过其他手段自动降级支持.
 
 所以, 在开发过程中, 我们可以直接根据设计稿, 如: `750px`, 直接切图, 无需过多考虑或使用 `postcss` 转换 `rem` 兼容等问题. 但由于目前市面上很多 ui 库都采用
-基于375px为基准的px方案, 为了能够直接使用这些 ui 库, 我们需要使用 `postcss` 将我们如 `750px` 基准的开发样式自动转换成 `375px`, 最后改动当前
-工具配置项 `designViewpoint: 375` 即可完美支持响应式.
+基于375px为基准的px方案, 为了能够直接使用这些 ui 库, 我们需要使用 `postcss` 将我们如 `750px` 基准的开发样式自动转换成 `375px`, 最后改动当前工具配置项 `designViewpoint: 375` 即可完美支持响应式.
 
 ## 使用
 
@@ -30,9 +29,7 @@
     // 以下配置可选
     window.__META_FLEXIBLE__ = {
         namespace: 'meta-flexible',
-        designViewpoint: 750,
-        getMetaViewpointTargetDensityDpiContent: (designViewpoint) => `width=${designViewpoint}, target-densitydpi=device-dpi, user-scalable=no`,
-        getMetaViewpointScaleRatioContent: (scale) => `width=device-width, initial-scale=${scale}, maximum-scale=${scale}, minimum-scale=${scale}, user-scalable=no`
+        designViewpoint: 750
       };
   </script>
   <script src="path/to/meta-flexible.umd.js"></script>
