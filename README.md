@@ -41,7 +41,31 @@
 ## 方案
 
 目前工具支持 4 中模式, 分别是 TargetDensityDpi, ScaleRatio, Rem, Viewpoint。其中 ScaleRatio 为 TargetDensityDpi 降级方案，其原理根据页面除以设计稿大小等比缩放。
-Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。
+Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其枚举如下: 
+
+```javascript
+  const Plan = {
+    TargetDensityDpi: 0,
+    ScaleRatio: 1,
+    Rem: 2,
+    Viewpoint: 3
+  };
+```
+
+如需启用指定方案, 可:
+
+```javascript
+  const Plan = {
+    TargetDensityDpi: 0,
+    ScaleRatio: 1,
+    Rem: 2,
+    Viewpoint: 3
+  };
+  window.__META_FLEXIBLE__ = {
+    plans: [Plan.Rem]
+  }
+```
+
 
 ## REM 支持
 在对外API中，默认 remRatio = 10， 即在750设计稿中，1rem = 750/10px = 75px，该值可自行根据需求修改即可。
