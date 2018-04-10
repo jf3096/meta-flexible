@@ -324,7 +324,7 @@
           return;
         }
         while (hasImpact === Impact.No) {
-          if (plans[0]) {
+          if (plans[0] !== undefined) {
             /**
              * 指向当前方案
              */
