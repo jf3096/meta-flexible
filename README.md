@@ -38,6 +38,14 @@
   <script src="path/to/meta-flexible.umd.js"></script>
 ```
 
+## 方案
+
+目前工具支持 4 中模式, 分别是 TargetDensityDpi, ScaleRatio, Rem, Viewpoint。其中 ScaleRatio 为 TargetDensityDpi 降级方案，其原理根据页面除以设计稿大小等比缩放。
+Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。
+
+## REM 支持
+在对外API中，默认 remRatio = 10， 即在750设计稿中，1rem = 750/10px = 75px，该值可自行根据需求修改即可。
+
 ## 注意
 
 **1. 请不要手动添加 \<meta name="viewpoint"\>**
@@ -51,18 +59,86 @@
 
 ```javascript
   window.__META_FLEXIBLE__ = {
-    // 命名空间
-    namespace: 'meta-flexible', 
-    // 设计稿大小
-    designViewpoint: 750, 
-    // meta viewpoint content, 细节请参考返回值
-    getMetaViewpointTargetDensityDpiContent: (designViewpoint) => `width=${designViewpoint}, target-densitydpi=device-dpi, user-scalable=no`,
-     // meta viewpoint content, 细节请参考返回值
-    getMetaViewpointScaleRatioContent: (scale) => `width=device-width, initial-scale=${scale}, maximum-scale=${scale}, minimum-scale=${scale}, user-scalable=no`
+    /**
+     * 日志命名空间
+     */
+    namespace: 'meta-flexible',
+    /**
+     * 根据设计稿大小设置即可
+     */
+    designViewpoint: 750,
+    /**
+     * meta viewpoint content, 细节请参考返回值
+     * @param designViewpoint
+     * @param enableViewpointFitForIphoneX
+     * @return {string}
+     */
+    getMetaViewpointTargetDensityDpiContent(designViewpoint, enableViewpointFitForIphoneX) {
+      return [
+        `width=${designViewpoint}`,
+        'target-densitydpi=device-dpi',
+        'user-scalable=no',
+        enableViewpointFitForIphoneX && 'viewport-fit=cover',
+      ].filter(Boolean).join(', ');
+    },
+    /**
+     * meta viewpoint content, 细节请参考返回值
+     * @param scale
+     * @param enableViewpointFitForIphoneX
+     * @return {string}
+     */
+    getMetaViewpointScaleRatioContent(scale, enableViewpointFitForIphoneX) {
+      return [
+        'width=device-width',
+        'initial-scale=1',
+        `maximum-scale=${scale}`,
+        `minimum-scale=${scale}`,
+        'user-scalable=no',
+        enableViewpointFitForIphoneX && 'viewport-fit=cover'
+      ].filter(Boolean).join(', ');
+    },
+    /**
+     * 判断是否是移动端
+     * @return {boolean}
+     */
+    isMobile: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+    /**
+     * 降级方案顺序
+     */
+    plans: [Plan.TargetDensityDpi, Plan.ScaleRatio],
+    /**
+     * 方案枚举
+     */
+    Plan,
+    /**
+     * 是否设置body字体
+     */
+    enableBodyFontSize: false,
+    /**
+     * 是否开启viewpoint fit
+     */
+    enableViewpointFitForIphoneX: false,
+    /**
+     * rem比例
+     */
+    remRatio: 10,
+    /**
+     * rem最大上限, 通过设置该字段防止页面无限放大
+     */
+    remUpperResizeLimit: 540,
+    /**
+     * 标记当前客户端, 参考值 pc | mobile
+     */
+    client: undefined
   };
 ```
 
 ## ChangeLog
+
+## 0.0.4 (2018-04-10)
+
+* feat: 加入 Rem 支持
+* feat: 对于 viewport-fit=cover, 默认禁用, 加入外部 API 允许外部控制是否支持
 
 ## 0.0.3 (2018-01-09)
 

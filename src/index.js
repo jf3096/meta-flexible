@@ -19,25 +19,86 @@
   };
 
   /**
-   * 默认options
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: function(*): string, getMetaViewpointScaleRatioContent: function(*): string, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number}, enableBodyFontSize: boolean, remRatio: number, remUpperResizeLimit: number}}
+   * 默认options, 当前client属性为保留字段, 可接受 'pc' | 'mobile'
+   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent(*, *=): *, getMetaViewpointScaleRatioContent(*, *=): *, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, remRatio: number, remUpperResizeLimit: number, client: undefined}}
    */
   const defaultMetaFlexibleOptions = {
+    /**
+     * 日志命名空间
+     */
     namespace: 'meta-flexible',
+    /**
+     * 根据设计稿大小设置即可
+     */
     designViewpoint: 750,
-    getMetaViewpointTargetDensityDpiContent: (designViewpoint) => `width=${designViewpoint}, target-densitydpi=device-dpi, user-scalable=no, viewport-fit=cover`,
-    getMetaViewpointScaleRatioContent: (scale) => `width=device-width, initial-scale=1, maximum-scale=${scale}, minimum-scale=${scale}, user-scalable=no, viewport-fit=cover`,
+    /**
+     * meta viewpoint content, 细节请参考返回值
+     * @param designViewpoint
+     * @param enableViewpointFitForIphoneX
+     * @return {string}
+     */
+    getMetaViewpointTargetDensityDpiContent(designViewpoint, enableViewpointFitForIphoneX) {
+      return [
+        `width=${designViewpoint}`,
+        'target-densitydpi=device-dpi',
+        'user-scalable=no',
+        enableViewpointFitForIphoneX && 'viewport-fit=cover',
+      ].filter(Boolean).join(', ');
+    },
+    /**
+     * meta viewpoint content, 细节请参考返回值
+     * @param scale
+     * @param enableViewpointFitForIphoneX
+     * @return {string}
+     */
+    getMetaViewpointScaleRatioContent(scale, enableViewpointFitForIphoneX) {
+      return [
+        'width=device-width',
+        'initial-scale=1',
+        `maximum-scale=${scale}`,
+        `minimum-scale=${scale}`,
+        'user-scalable=no',
+        enableViewpointFitForIphoneX && 'viewport-fit=cover'
+      ].filter(Boolean).join(', ');
+    },
+    /**
+     * 判断是否是移动端
+     * @return {boolean}
+     */
     isMobile: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+    /**
+     * 降级方案顺序
+     */
     plans: [Plan.TargetDensityDpi, Plan.ScaleRatio],
+    /**
+     * 方案枚举
+     */
     Plan,
+    /**
+     * 是否设置body字体
+     */
     enableBodyFontSize: false,
+    /**
+     * 是否开启viewpoint fit
+     */
+    enableViewpointFitForIphoneX: false,
+    /**
+     * rem比例
+     */
     remRatio: 10,
-    remUpperResizeLimit: 540
+    /**
+     * rem最大上限, 通过设置该字段防止页面无限放大
+     */
+    remUpperResizeLimit: 540,
+    /**
+     * 标记当前客户端, 参考值 pc | mobile
+     */
+    client: undefined
   };
 
   /**
    * 合并外部API Options
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent: function(*): string, getMetaViewpointScaleRatioContent: function(*): string, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number}, enableBodyFontSize: boolean, remRatio: number, remUpperResizeLimit: number}}
+   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent, (*, *=): *, getMetaViewpointScaleRatioContent, (*, *=): *, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, remRatio: number, remUpperResizeLimit: number, client: undefined}}
    */
   const metaFlexibleOptions = {...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions};
 
@@ -70,6 +131,12 @@
    * @type {number}
    */
   const designViewpoint = metaFlexibleOptions.designViewpoint;
+
+  /**
+   * 是否启用viewpoint fit, 该属性仅对iphone-x生效
+   * @type {boolean}
+   */
+  const enableViewpointFitForIphoneX = metaFlexibleOptions.enableViewpointFitForIphoneX;
 
   /**
    * 拉取 document 元素
@@ -188,7 +255,7 @@
     let isAppended = false;
     return () => {
       if (!isAppended) {
-        createOrUpdateMetaViewpoint(void 0, getMetaViewpointTargetDensityDpiContent(designViewpoint));
+        createOrUpdateMetaViewpoint(void 0, getMetaViewpointTargetDensityDpiContent(designViewpoint, enableViewpointFitForIphoneX));
         isAppended = true;
       }
     };
@@ -206,7 +273,19 @@
     return (scale) => {
       if (prevScale !== scale) {
         prevScale = scale;
-        metaViewpoint = createOrUpdateMetaViewpoint(metaViewpoint, getMetaViewpointScaleRatioContent(scale));
+        metaViewpoint = createOrUpdateMetaViewpoint(metaViewpoint, getMetaViewpointScaleRatioContent(scale, enableViewpointFitForIphoneX));
+      }
+    };
+  })();
+
+  /**
+   * 上报错误, 异步抛异常, 用于上报
+   */
+  const reportPlanNotWorkingErrorOnce = (() => {
+    const hasReported = false;
+    return () => {
+      if (!hasReported) {
+        setTimeout(() => invariant(false, `${NAMESPACE}所使用的所有方案失效, 暂用最后一种方案兜底`), 0);
       }
     };
   })();
@@ -223,6 +302,10 @@
      * 是否生效,默认情况下是No
      */
     let hasImpact = Impact.No;
+    /**
+     * 用于存储当前方案
+     */
+    let currentPlan;
     return () => {
       if (clientWidth !== docEl.clientWidth) {
         clientWidth = docEl.clientWidth;
@@ -233,21 +316,31 @@
           /**
            * 第一个方案作为当前使用方案
            */
-          implementPlan(plans[0]);
+          implementPlan(currentPlan);
+          return;
+        }
+        if (plans.length === 0) {
+          implementPlan(currentPlan);
           return;
         }
         while (hasImpact === Impact.No) {
+          if (plans[0]) {
+            /**
+             * 指向当前方案
+             */
+            currentPlan = plans[0];
+          }
           /**
            * 如果所有方案失效, 直接抛异常, 用于上报, 但保留最后一种方案
            */
           if (plans.length <= 0) {
-            setTimeout(() => invariant(false, `${NAMESPACE}所使用的所有方案失效, 暂用最后一种方案兜底`), 0);
+            reportPlanNotWorkingErrorOnce();
             break;
           }
           /**
            * 是否有生效
            */
-          hasImpact = hasPlanImpact(() => implementPlan(plans[0]));
+          hasImpact = hasPlanImpact(() => implementPlan(currentPlan));
           /**
            * 如果发现方案失效, 直接抛弃方案列表第一项
            */
@@ -314,7 +407,7 @@
       }
     }
     const rem = width / remRatio;
-    docEl.style.fontSize = +`${rem}px`;
+    docEl.style.fontSize = `${rem}px`;
     apiMetaFlexibleOptions.rem = rem;
   }
 
