@@ -9,7 +9,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",
-    "precommit": "npm run build"
+    "precommit": "npm run build",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "meta",
