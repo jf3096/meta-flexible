@@ -4,10 +4,16 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import uglify from 'rollup-plugin-uglify';
 import size from 'rollup-plugin-filesize';
-
+import replace from 'rollup-plugin-replace';
 import pkg from './package.json';
 
 const plugins = [
+  replace({
+    delimiters: ['<@', '@>'],
+    values: {
+      VERSION: pkg.version
+    }
+  }),
   resolve(), // so Rollup can find `ms`
   commonjs(), // so Rollup can convert `ms` to an ES module
   eslint({

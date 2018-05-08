@@ -1,5 +1,11 @@
 (function (window, document, apiMetaFlexibleOptions) {
   /**
+   * 标记版本, 自动生成版本号
+   * @type {string}
+   */
+  apiMetaFlexibleOptions.version = '<@VERSION@>';
+
+  /**
    * 方案枚举
    */
   const Plan = {

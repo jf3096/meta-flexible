@@ -156,6 +156,11 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
 
 ## ChangeLog
 
+## 0.0.5 (2018-05-08)
+
+* feat: 加入rollup-replace用于自动生成版本号, 方便前端查阅使用的版本
+* feat: 重命名, 移除 umd 后缀
+
 ## 0.0.4 (2018-04-10)
 
 * feat: 加入 Rem 支持
