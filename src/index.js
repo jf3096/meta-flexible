@@ -1,4 +1,4 @@
-(function (window, document, apiMetaFlexibleOptions) {
+(function(window, document, apiMetaFlexibleOptions) {
   /**
    * 标记版本, 自动生成版本号
    * @type {string}
@@ -106,7 +106,7 @@
    * 合并外部API Options
    * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent, (*, *=): *, getMetaViewpointScaleRatioContent, (*, *=): *, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, remRatio: number, remUpperResizeLimit: number, client: undefined}}
    */
-  const metaFlexibleOptions = {...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions};
+  const metaFlexibleOptions = { ...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions };
 
   /**
    * 拉取 meta TargetDensityDpiContent 模板
@@ -232,14 +232,12 @@
     if (isAppended) {
       metaViewpoint.setAttribute('content', content);
     } else {
-      if (!metaViewpoint) {
-        const metaViewpointElement = getMetaViewpointElement();
-        if (!metaViewpointElement) {
-          metaViewpoint = document.createElement('meta');
-          metaViewpoint.setAttribute('name', 'viewport');
-        } else {
-          metaViewpoint = metaViewpointElement;
-        }
+      const metaViewpointElement = getMetaViewpointElement();
+      if (!metaViewpointElement) {
+        metaViewpoint = document.createElement('meta');
+        metaViewpoint.setAttribute('name', 'viewport');
+      } else {
+        metaViewpoint = metaViewpointElement;
       }
       metaViewpoint.setAttribute('content', content);
       const headElement = docEl.querySelector('head');
@@ -259,6 +257,25 @@
    */
   const setMetaViewpointTargetDensityDpi = (() => {
     let isAppended = false;
+    let orientationChangeCounter = 0;
+    /**
+     * 处理在 ios iphone 6 (可能也涉及其他机型), 在翻转手机后当值 targetdensity 方案失效, window.innerWidth 异常, 不等于 designViewpoint
+     */
+    window.addEventListener('orientationchange', () => {
+      /**
+       * 且这个行为发生在翻转过程的某一个时间点, 所以需要等待若干时间, 目前测试等待setTimeout时间, 100 (无效), 150 (偶然), 200(可用),
+       * 但不确定是否可能在性能低的时候翻转时间延长导致失效
+       */
+      setTimeout(() => {
+        if (window.innerWidth !== designViewpoint) {
+          orientationChangeCounter++;
+          if (orientationChangeCounter > 5) {
+            orientationChangeCounter = 0;
+          }
+          createOrUpdateMetaViewpoint(void 0, getMetaViewpointTargetDensityDpiContent(designViewpoint + orientationChangeCounter / 1000, enableViewpointFitForIphoneX));
+        }
+      }, 200);
+    });
     return () => {
       if (!isAppended) {
         createOrUpdateMetaViewpoint(void 0, getMetaViewpointTargetDensityDpiContent(designViewpoint, enableViewpointFitForIphoneX));
@@ -473,9 +490,9 @@
     return window.screen.width;
   }
 
-  (function () {
+  (function() {
 
-    const {enableBodyFontSize, isMobile} = metaFlexibleOptions;
+    const { enableBodyFontSize, isMobile } = metaFlexibleOptions;
 
     if (!isMobile()) {
       warn(false, `请确保在移动端下使用${NAMESPACE}`);
@@ -501,7 +518,7 @@
     /**
      * 在页面大小变更时触发更新
      */
-    window.addEventListener('resize', (function () {
+    window.addEventListener('resize', (function() {
       let timeoutId;
       return () => {
         clearTimeout(timeoutId);

@@ -156,6 +156,10 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
 
 ## ChangeLog
 
+## 0.0.6 (2018-09-18)
+
+* bug: 通过 orientationchange 修复 targetdensitydpi 方案下横竖屏在 ios 时切换导致响应式失效
+
 ## 0.0.5 (2018-05-08)
 
 * feat: 加入rollup-replace用于自动生成版本号, 方便前端查阅使用的版本
