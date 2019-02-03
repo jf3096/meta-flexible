@@ -26,7 +26,7 @@
 
   /**
    * 默认options, 当前client属性为保留字段, 可接受 'pc' | 'mobile'
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent(*, *=): *, getMetaViewpointScaleRatioContent(*, *=): *, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, remRatio: number, remUpperResizeLimit: number, client: undefined}}
+   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, designViewpoint: number, remUpperResizeLimit: number, plans: number[], namespace: string, client: undefined, getMetaViewpointScaleRatioContent(*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent(*, *=): string}}
    */
   const defaultMetaFlexibleOptions = {
     /**
@@ -89,7 +89,7 @@
      */
     enableViewpointFitForIphoneX: false,
     /**
-     * rem比例
+     * rem 比例
      */
     remRatio: 10,
     /**
@@ -99,12 +99,16 @@
     /**
      * 标记当前客户端, 参考值 pc | mobile
      */
-    client: undefined
+    client: undefined,
+    /**
+     * 禁止 ReportPlanNotWorkingErrorOnce
+     */
+    disableReportPlanNotWorkingErrorOnce: true
   };
 
   /**
    * 合并外部API Options
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent, (*, *=): *, getMetaViewpointScaleRatioContent, (*, *=): *, isMobile: function(): boolean, plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, remRatio: number, remUpperResizeLimit: number, client: undefined}}
+   * @type {{(*, *=): *, (*, *=): *, enableBodyFontSize: boolean, designViewpoint: number, remUpperResizeLimit: number, plans: *[], enableViewpointFitForIphoneX: boolean, namespace: string, client: undefined, getMetaViewpointScaleRatioContent, isMobile: (function(): boolean), Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, remRatio: number, getMetaViewpointTargetDensityDpiContent, disableReportPlanNotWorkingErrorOnce: boolean}}
    */
   const metaFlexibleOptions = { ...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions };
 
@@ -171,6 +175,11 @@
    * rem 页面宽度变化最大上限, 当大于 remUpperResizeLimit, 根节点 font-size 将不再变化
    */
   const remUpperResizeLimit = metaFlexibleOptions.remUpperResizeLimit;
+
+  /**
+   * 禁止 ReportPlanNotWorkingErrorOnce
+   */
+  const disableReportPlanNotWorkingErrorOnce = metaFlexibleOptions.disableReportPlanNotWorkingErrorOnce;
 
   /**
    * 条件判错函数
@@ -263,7 +272,7 @@
      */
     window.addEventListener('orientationchange', () => {
       /**
-       * 且这个行为发生在翻转过程的某一个时间点, 所以需要等待若干时间, 目前测试等待setTimeout时间, 100 (无效), 150 (偶然), 200(可用),
+       * 且这个行为发生在翻转过程的某一个时间点, 所以需要等待若干时间, 目前测试等待setTimeout时间, 100 (无效), 150 (偶然), 200(可用), 250(较稳)
        * 但不确定是否可能在性能低的时候翻转时间延长导致失效
        */
       setTimeout(() => {
@@ -274,7 +283,7 @@
           }
           createOrUpdateMetaViewpoint(void 0, getMetaViewpointTargetDensityDpiContent(designViewpoint + orientationChangeCounter / 1000, enableViewpointFitForIphoneX));
         }
-      }, 200);
+      }, 250);
     });
     return () => {
       if (!isAppended) {
@@ -307,8 +316,14 @@
   const reportPlanNotWorkingErrorOnce = (() => {
     const hasReported = false;
     return () => {
-      if (!hasReported) {
-        setTimeout(() => invariant(false, `${NAMESPACE}所使用的所有方案失效, 暂用最后一种方案兜底`), 0);
+      const errorMessage = `${NAMESPACE}所使用的所有方案失效, 暂用最后一种方案兜底`;
+      if (!disableReportPlanNotWorkingErrorOnce) {
+        if (!hasReported) {
+          setTimeout(() => invariant(false, errorMessage), 0);
+        }
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(errorMessage);
       }
     };
   })();

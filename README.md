@@ -150,11 +150,20 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
     /**
      * 标记当前客户端, 参考值 pc | mobile
      */
-    client: undefined
+    client: undefined,
+    /**
+     * 禁止 ReportPlanNotWorkingErrorOnce
+     */
+    disableReportPlanNotWorkingErrorOnce: true
   };
 ```
 
 ## ChangeLog
+
+## 0.0.7 (2019-02-03)
+
+* feat: 延长 orientation change 延迟的监测, 从原来的 200ms 增加到 250ms
+* change: 新增字段 `disableReportPlanNotWorkingErrorOnce`, 默认 `true`. 在兜底监测时, 决定不再上报错误, 改为 console.warn 
 
 ## 0.0.6 (2018-09-18)
 
