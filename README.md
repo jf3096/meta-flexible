@@ -154,11 +154,19 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
     /**
      * 禁止 ReportPlanNotWorkingErrorOnce
      */
-    disableReportPlanNotWorkingErrorOnce: true
+    disableReportPlanNotWorkingErrorOnce: true,
+    /**
+     * 是否修复手动在(浏览器)中设置字体大小, 这会导致在 rem 方案中让响应式失效
+     */
+    fixRemManualSettingFontResize: true
   };
 ```
 
 ## ChangeLog
+
+## 0.0.8 (2019-06-12)
+
+* feat: 增加 `fixRemManualSettingFontResize` 用于修正部分用户手动放大浏览器字体导致 rem 响应式方案失效的问题, 默认该值为 true
 
 ## 0.0.7 (2019-02-03)
 

@@ -1,9 +1,34 @@
-(function(window, document, apiMetaFlexibleOptions) {
+(function (window, document, apiMetaFlexibleOptions) {
   /**
    * 标记版本, 自动生成版本号
    * @type {string}
    */
   apiMetaFlexibleOptions.version = '<@VERSION@>';
+
+  /**
+   * 计算文字大小比例差, 用于检查用户在手机浏览器中发大了字体导致响应式失效
+   */
+  const computeDiffFontSizeRatio = (() => {
+    let diffFontSizeRatio;
+    /**
+     * 当前实际字体大小, 用于检查用户在手机浏览器中发大了字体导致响应式失效
+     * @returns {number}
+     */
+    const computeActualFontSize = () => {
+      return +getComputedStyle(document.documentElement).getPropertyValue('font-size').replace(/px/, '');
+    };
+    return () => {
+      if (!diffFontSizeRatio) {
+        const rawDocElementCssText = document.documentElement.style.cssText;
+        document.documentElement.style.cssText = 'font-size:100px !important';
+        const docElementStyleFontSize = 100;
+        const actualFontSize = computeActualFontSize();
+        diffFontSizeRatio = actualFontSize / docElementStyleFontSize;
+        document.documentElement.style.cssText = rawDocElementCssText;
+      }
+      return diffFontSizeRatio;
+    };
+  })();
 
   /**
    * 方案枚举
@@ -26,7 +51,7 @@
 
   /**
    * 默认options, 当前client属性为保留字段, 可接受 'pc' | 'mobile'
-   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, designViewpoint: number, remUpperResizeLimit: number, plans: number[], namespace: string, client: undefined, getMetaViewpointScaleRatioContent(*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent(*, *=): string}}
+   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, designViewpoint: number, remUpperResizeLimit: number, plans: number[], namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent(*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent(*, *=): string}}
    */
   const defaultMetaFlexibleOptions = {
     /**
@@ -103,14 +128,18 @@
     /**
      * 禁止 ReportPlanNotWorkingErrorOnce
      */
-    disableReportPlanNotWorkingErrorOnce: true
+    disableReportPlanNotWorkingErrorOnce: true,
+    /**
+     * 是否修复手动在(浏览器)中设置字体大小, 这会导致在 rem 方案中让响应式失效
+     */
+    fixRemManualSettingFontResize: true
   };
 
   /**
    * 合并外部API Options
-   * @type {{(*, *=): *, (*, *=): *, enableBodyFontSize: boolean, designViewpoint: number, remUpperResizeLimit: number, plans: *[], enableViewpointFitForIphoneX: boolean, namespace: string, client: undefined, getMetaViewpointScaleRatioContent, isMobile: (function(): boolean), Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, remRatio: number, getMetaViewpointTargetDensityDpiContent, disableReportPlanNotWorkingErrorOnce: boolean}}
+   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, designViewpoint: number, remUpperResizeLimit: number, plans: number[], namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent, (*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent, (*, *=): string}|*|{}}
    */
-  const metaFlexibleOptions = { ...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions };
+  const metaFlexibleOptions = {...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions};
 
   /**
    * 拉取 meta TargetDensityDpiContent 模板
@@ -180,6 +209,12 @@
    * 禁止 ReportPlanNotWorkingErrorOnce
    */
   const disableReportPlanNotWorkingErrorOnce = metaFlexibleOptions.disableReportPlanNotWorkingErrorOnce;
+
+  /**
+   * 是否修复手动在(浏览器)中设置字体大小, 这会导致在 rem 方案中让响应式失效
+   * @type {boolean}
+   */
+  const fixRemManualSettingFontResize = metaFlexibleOptions.fixRemManualSettingFontResize;
 
   /**
    * 条件判错函数
@@ -444,7 +479,10 @@
         width = remUpperResizeLimit;
       }
     }
-    const rem = width / remRatio;
+    let rem = width / remRatio;
+    if (fixRemManualSettingFontResize) {
+      rem = rem / computeDiffFontSizeRatio();
+    }
     docEl.style.fontSize = `${rem}px`;
     apiMetaFlexibleOptions.rem = rem;
   }
@@ -505,9 +543,9 @@
     return window.screen.width;
   }
 
-  (function() {
+  (function () {
 
-    const { enableBodyFontSize, isMobile } = metaFlexibleOptions;
+    const {enableBodyFontSize, isMobile} = metaFlexibleOptions;
 
     if (!isMobile()) {
       warn(false, `请确保在移动端下使用${NAMESPACE}`);
@@ -533,7 +571,7 @@
     /**
      * 在页面大小变更时触发更新
      */
-    window.addEventListener('resize', (function() {
+    window.addEventListener('resize', (function () {
       let timeoutId;
       return () => {
         clearTimeout(timeoutId);
