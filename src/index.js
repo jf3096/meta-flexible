@@ -50,6 +50,16 @@
   };
 
   /**
+   * rem 调节大小依赖
+   * @type {{Auto: string, Height: string, Width: string}}
+   */
+  const RemResizeDependency = {
+    Width: 'width',
+    Height: 'height',
+    Auto: 'auto'
+  };
+
+  /**
    * 默认options, 当前client属性为保留字段, 可接受 'pc' | 'mobile'
    * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, designViewpoint: number, remUpperResizeLimit: number, plans: number[], namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent(*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent(*, *=): string}}
    */
@@ -121,6 +131,14 @@
      * rem最大上限, 通过设置该字段防止页面无限放大
      */
     remUpperResizeLimit: 540,
+    /*
+     * rem 缩放基准依赖, 有效值为 width|height|auto
+     * 当缩放基准依赖为 width 时, 页面会根据宽度缩放而变化 html root 的 fontSize 大小
+     * 当缩放基准依赖为 height 时, 页面会根据高度缩放而变化 html root 的 fontSize 大小
+     * 当缩放基准依赖为 auto 时, 页面会根据宽高比决定, 并选择较小的值作为基准值
+     * 默认: width
+     */
+    remResizeDependency: RemResizeDependency.Width,
     /**
      * 标记当前客户端, 参考值 pc | mobile
      */
@@ -137,7 +155,7 @@
 
   /**
    * 合并外部API Options
-   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, designViewpoint: number, remUpperResizeLimit: number, plans: number[], namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent, (*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent, (*, *=): string}|*|{}}
+   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent, (*, *=): *, getMetaViewpointScaleRatioContent, (*, *=): *, isMobile: (function(): boolean), plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, remRatio: number, remUpperResizeLimit: number, client: undefined}|*|{}}
    */
   const metaFlexibleOptions = {...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions};
 
@@ -204,18 +222,23 @@
    * rem 页面宽度变化最大上限, 当大于 remUpperResizeLimit, 根节点 font-size 将不再变化
    */
   const remUpperResizeLimit = metaFlexibleOptions.remUpperResizeLimit;
-
   /**
    * 禁止 ReportPlanNotWorkingErrorOnce
    */
   const disableReportPlanNotWorkingErrorOnce = metaFlexibleOptions.disableReportPlanNotWorkingErrorOnce;
-
+  /*
+   * rem 缩放基准依赖, 有效值为 width|height|auto
+   * 当缩放基准依赖为 width 时, 页面会根据宽度缩放而变化 html root 的 fontSize 大小
+   * 当缩放基准依赖为 height 时, 页面会根据高度缩放而变化 html root 的 fontSize 大小
+   * 当缩放基准依赖为 auto 时, 页面会根据宽高比决定, 并选择较小的值作为基准值
+   * 默认: width
+   */
+  const remResizeDependency = metaFlexibleOptions.remResizeDependency;
   /**
    * 是否修复手动在(浏览器)中设置字体大小, 这会导致在 rem 方案中让响应式失效
    * @type {boolean}
    */
   const fixRemManualSettingFontResize = metaFlexibleOptions.fixRemManualSettingFontResize;
-
   /**
    * 条件判错函数
    * @param condition 错误条件
@@ -473,13 +496,20 @@
    * @param hasResizeLimit
    */
   function refreshRem(hasResizeLimit = true) {
-    let width = docEl.clientWidth;
+    let base;
+    if (remResizeDependency === RemResizeDependency.Width) {
+      base = docEl.clientWidth;
+    } else if (remResizeDependency === RemResizeDependency.Height) {
+      base = docEl.clientHeight;
+    } else if (remResizeDependency === RemResizeDependency.Auto) {
+      base =  Math.min(docEl.clientWidth, docEl.clientHeight);
+    }
     if (hasResizeLimit) {
-      if (width > remUpperResizeLimit) {
-        width = remUpperResizeLimit;
+      if (base > remUpperResizeLimit) {
+        base = remUpperResizeLimit;
       }
     }
-    let rem = width / remRatio;
+    let rem = base / remRatio;
     if (fixRemManualSettingFontResize) {
       rem = rem / computeDiffFontSizeRatio();
     }
@@ -498,7 +528,7 @@
    * target density dpi 具体实现
    */
   function scaleRatioImpl() {
-    const width = window.screen.width;
+    const width = getScreenWidth();
     let scale = width / designViewpoint;
     scale > 1 && (scale = 1);
     setMetaViewpointScaleRatio(scale);

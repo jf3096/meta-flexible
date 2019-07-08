@@ -1,6 +1,6 @@
 {
   "name": "meta-flexible",
-  "version": "0.0.8",
+  "version": "0.0.9-alpha",
   "description": "A plugin used to fallback target density dpi",
   "main": "lib/meta-flexible.cjs.js",
   "module": "lib/meta-flexible.esm.js",

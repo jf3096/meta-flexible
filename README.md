@@ -147,6 +147,14 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
      * rem最大上限, 通过设置该字段防止页面无限放大
      */
     remUpperResizeLimit: 540,
+    /*
+     * rem 缩放基准依赖, 有效值为 width|height|auto
+     * 当缩放基准依赖为 width 时, 页面会根据宽度缩放而变化 html root 的 fontSize 大小
+     * 当缩放基准依赖为 height 时, 页面会根据高度缩放而变化 html root 的 fontSize 大小
+     * 当缩放基准依赖为 auto 时, 页面会根据宽高比决定, 并选择较小的值作为基准值
+     * 默认: width
+     */
+    remResizeDependency: RemResizeDependency.Width,
     /**
      * 标记当前客户端, 参考值 pc | mobile
      */
@@ -163,6 +171,10 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
 ```
 
 ## ChangeLog
+
+## 0.0.9-alpha (2019-07-08)
+
+* feat: 增加 `remResizeDependency` 用于新增对横屏的支持, 当使用横屏时应该使用基于 height 高度作为响应式基准而并非 width,  默认该值为 width
 
 ## 0.0.8 (2019-06-12)
 
