@@ -172,6 +172,10 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
 
 ## ChangeLog
 
+## 0.0.9-beta (2019-07-09)
+
+* feat: 增加 `remResizeDependency` 后当高度 resize 时, 也应该触发 resize 具体判断, 而更新前仅对 width 判断.
+
 ## 0.0.9-alpha (2019-07-08)
 
 * feat: 增加 `remResizeDependency` 用于新增对横屏的支持, 当使用横屏时应该使用基于 height 高度作为响应式基准而并非 width,  默认该值为 width

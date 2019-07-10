@@ -391,10 +391,6 @@
    */
   const applyResponsePlan = (() => {
     /**
-     * 客户端长度, 当判定长度一致时不进入该函数, 从而减少计算
-     */
-    let clientWidth;
-    /**
      * 是否生效,默认情况下是No
      */
     let hasImpact = Impact.No;
@@ -403,8 +399,6 @@
      */
     let currentPlan;
     return () => {
-      if (clientWidth !== docEl.clientWidth) {
-        clientWidth = docEl.clientWidth;
         /**
          * 如果已经发现当前方案已生效, 直接使用当前方案即可, 不再继续尝试后续方案
          */
@@ -449,7 +443,6 @@
          * 当出现以上情况时, 重置 hasImpact = 无效, 让下一轮再次触发当前函数时在判定
          */
         hasImpact === Impact.Unknown && (hasImpact = Impact.No);
-      }
     };
   })();
 
