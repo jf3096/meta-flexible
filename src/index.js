@@ -60,8 +60,15 @@
   };
 
   /**
+   * no operation
+   * @param f
+   * @returns {*}
+   */
+  const noop = f => f;
+
+  /**
    * 默认options, 当前client属性为保留字段, 可接受 'pc' | 'mobile'
-   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, designViewpoint: number, remUpperResizeLimit: number, plans: number[], namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent(*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent(*, *=): string}}
+   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, onBeforeApplyPlan: (function(*): *), designViewpoint: number, remUpperResizeLimit: number, plans: number[], remResizeDependency: string, namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent(*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent(*, *=): string}}
    */
   const defaultMetaFlexibleOptions = {
     /**
@@ -150,12 +157,16 @@
     /**
      * 是否修复手动在(浏览器)中设置字体大小, 这会导致在 rem 方案中让响应式失效
      */
-    fixRemManualSettingFontResize: true
+    fixRemManualSettingFontResize: true,
+    /**
+     * 在应用方案前进行相关处理
+     */
+    onBeforeApplyPlan: noop
   };
 
   /**
    * 合并外部API Options
-   * @type {{namespace: string, designViewpoint: number, getMetaViewpointTargetDensityDpiContent, (*, *=): *, getMetaViewpointScaleRatioContent, (*, *=): *, isMobile: (function(): boolean), plans: *[], Plan: {TargetDensityDpi: number, ScaleRatio: number, Rem: number, Viewpoint: number}, enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, remRatio: number, remUpperResizeLimit: number, client: undefined}|*|{}}
+   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, onBeforeApplyPlan: (function(*): *), designViewpoint: number, remUpperResizeLimit: number, plans: number[], remResizeDependency: string, namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent, (*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent, (*, *=): string}|*|{}}
    */
   const metaFlexibleOptions = {...defaultMetaFlexibleOptions, ...apiMetaFlexibleOptions};
 
@@ -211,21 +222,21 @@
   /**
    * plan 列表
    */
-  const plans = metaFlexibleOptions.plans;
+  // const plans = metaFlexibleOptions.plans;
 
   /**
    * rem的基准值, 如 remRatio = 10, 即在750px设计稿中, 1rem = 75px
    */
-  const remRatio = metaFlexibleOptions.remRatio;
+  // const remRatio = metaFlexibleOptions.remRatio;
 
   /**
    * rem 页面宽度变化最大上限, 当大于 remUpperResizeLimit, 根节点 font-size 将不再变化
    */
-  const remUpperResizeLimit = metaFlexibleOptions.remUpperResizeLimit;
+  // const remUpperResizeLimit = metaFlexibleOptions.remUpperResizeLimit;
   /**
    * 禁止 ReportPlanNotWorkingErrorOnce
    */
-  const disableReportPlanNotWorkingErrorOnce = metaFlexibleOptions.disableReportPlanNotWorkingErrorOnce;
+  // const disableReportPlanNotWorkingErrorOnce = metaFlexibleOptions.disableReportPlanNotWorkingErrorOnce;
   /*
    * rem 缩放基准依赖, 有效值为 width|height|auto
    * 当缩放基准依赖为 width 时, 页面会根据宽度缩放而变化 html root 的 fontSize 大小
@@ -233,12 +244,19 @@
    * 当缩放基准依赖为 auto 时, 页面会根据宽高比决定, 并选择较小的值作为基准值
    * 默认: width
    */
-  const remResizeDependency = metaFlexibleOptions.remResizeDependency;
+  // const remResizeDependency = metaFlexibleOptions.remResizeDependency;
   /**
    * 是否修复手动在(浏览器)中设置字体大小, 这会导致在 rem 方案中让响应式失效
    * @type {boolean}
    */
-  const fixRemManualSettingFontResize = metaFlexibleOptions.fixRemManualSettingFontResize;
+  // const fixRemManualSettingFontResize = metaFlexibleOptions.fixRemManualSettingFontResize;
+
+  /**
+   * 在页面 resize 时触发
+   * @type {function(*): *}
+   */
+  // const onBeforeResize = metaFlexibleOptions.onBeforeResize;
+
   /**
    * 条件判错函数
    * @param condition 错误条件
@@ -375,7 +393,7 @@
     const hasReported = false;
     return () => {
       const errorMessage = `${NAMESPACE}所使用的所有方案失效, 暂用最后一种方案兜底`;
-      if (!disableReportPlanNotWorkingErrorOnce) {
+      if (!metaFlexibleOptions.disableReportPlanNotWorkingErrorOnce) {
         if (!hasReported) {
           setTimeout(() => invariant(false, errorMessage), 0);
         }
@@ -398,51 +416,57 @@
      * 用于存储当前方案
      */
     let currentPlan;
+
     return () => {
+      /**
+       * 在方案之前之前允许用户更新或操作 metaFlexible
+       * TODO: 当修改 plan 时可能会出现与闭包缓存值不一致的场景
+       */
+      metaFlexibleOptions.onBeforeApplyPlan(metaFlexibleOptions);
+      /**
+       * 如果已经发现当前方案已生效, 直接使用当前方案即可, 不再继续尝试后续方案
+       */
+      if (hasImpact === Impact.Yes) {
         /**
-         * 如果已经发现当前方案已生效, 直接使用当前方案即可, 不再继续尝试后续方案
+         * 第一个方案作为当前使用方案
          */
-        if (hasImpact === Impact.Yes) {
+        implementPlan(currentPlan);
+        return;
+      }
+      if (metaFlexibleOptions.plans.length === 0) {
+        implementPlan(currentPlan);
+        return;
+      }
+      while (hasImpact === Impact.No) {
+        if (metaFlexibleOptions.plans[0] !== undefined) {
           /**
-           * 第一个方案作为当前使用方案
+           * 指向当前方案
            */
-          implementPlan(currentPlan);
-          return;
-        }
-        if (plans.length === 0) {
-          implementPlan(currentPlan);
-          return;
-        }
-        while (hasImpact === Impact.No) {
-          if (plans[0] !== undefined) {
-            /**
-             * 指向当前方案
-             */
-            currentPlan = plans[0];
-          }
-          /**
-           * 如果所有方案失效, 直接抛异常, 用于上报, 但保留最后一种方案
-           */
-          if (plans.length <= 0) {
-            reportPlanNotWorkingErrorOnce();
-            break;
-          }
-          /**
-           * 是否有生效
-           */
-          hasImpact = hasPlanImpact(() => implementPlan(currentPlan));
-          /**
-           * 如果发现方案失效, 直接抛弃方案列表第一项
-           */
-          if (hasImpact === Impact.No) {
-            plans.shift();
-          }
+          currentPlan = metaFlexibleOptions.plans[0];
         }
         /**
-         * 当是否生效是未知时, 如: 当前页面大小完全等于预设的值 (设计稿大小), 那么无法判断是否生效
-         * 当出现以上情况时, 重置 hasImpact = 无效, 让下一轮再次触发当前函数时在判定
+         * 如果所有方案失效, 直接抛异常, 用于上报, 但保留最后一种方案
          */
-        hasImpact === Impact.Unknown && (hasImpact = Impact.No);
+        if (metaFlexibleOptions.plans.length <= 0) {
+          reportPlanNotWorkingErrorOnce();
+          break;
+        }
+        /**
+         * 是否有生效
+         */
+        hasImpact = hasPlanImpact(() => implementPlan(currentPlan));
+        /**
+         * 如果发现方案失效, 直接抛弃方案列表第一项
+         */
+        if (hasImpact === Impact.No) {
+          metaFlexibleOptions.plans.shift();
+        }
+      }
+      /**
+       * 当是否生效是未知时, 如: 当前页面大小完全等于预设的值 (设计稿大小), 那么无法判断是否生效
+       * 当出现以上情况时, 重置 hasImpact = 无效, 让下一轮再次触发当前函数时在判定
+       */
+      hasImpact === Impact.Unknown && (hasImpact = Impact.No);
     };
   })();
 
@@ -490,12 +514,13 @@
    */
   function refreshRem(hasResizeLimit = true) {
     let base;
+    const {remResizeDependency, remUpperResizeLimit, remRatio, fixRemManualSettingFontResize} = metaFlexibleOptions;
     if (remResizeDependency === RemResizeDependency.Width) {
       base = docEl.clientWidth;
     } else if (remResizeDependency === RemResizeDependency.Height) {
       base = docEl.clientHeight;
     } else if (remResizeDependency === RemResizeDependency.Auto) {
-      base =  Math.min(docEl.clientWidth, docEl.clientHeight);
+      base = Math.min(docEl.clientWidth, docEl.clientHeight);
     }
     if (hasResizeLimit) {
       if (base > remUpperResizeLimit) {
