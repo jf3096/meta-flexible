@@ -67,8 +67,8 @@
   const noop = f => f;
 
   /**
-   * 默认options, 当前client属性为保留字段, 可接受 'pc' | 'mobile'
-   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, onBeforeApplyPlan: (function(*): *), designViewpoint: number, remUpperResizeLimit: number, plans: number[], remResizeDependency: string, namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent(*, *=): string, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent(*, *=): string}}
+   *  默认options, 当前client属性为保留字段, 可接受 'pc' | 'mobile'
+   * @type {{enableBodyFontSize: boolean, enableViewpointFitForIphoneX: boolean, disableReportPlanNotWorkingErrorOnce: boolean, Plan: {ScaleRatio: number, Viewpoint: number, Rem: number, TargetDensityDpi: number}, onBeforeApplyPlan: (function(*): *), designViewpoint: number, remUpperResizeLimit: number, plans: number[], remResizeDependency: string, namespace: string, fixRemManualSettingFontResize: boolean, client: undefined, getMetaViewpointScaleRatioContent(*, *=): string, applyResponsePlanOnce: boolean, isMobile: (function(): boolean), remRatio: number, getMetaViewpointTargetDensityDpiContent(*, *=): string}}
    */
   const defaultMetaFlexibleOptions = {
     /**
@@ -161,7 +161,11 @@
     /**
      * 在应用方案前进行相关处理
      */
-    onBeforeApplyPlan: noop
+    onBeforeApplyPlan: noop,
+    /**
+     * 仅执行一次响应式方案, 这样的目的是在 resize 后不对页面响应式继续做其他操作
+     */
+    applyResponsePlanOnce: false
   };
 
   /**
@@ -255,6 +259,7 @@
    * 在页面 resize 时触发
    * @type {function(*): *}
    */
+
   // const onBeforeResize = metaFlexibleOptions.onBeforeResize;
 
   /**
@@ -423,6 +428,7 @@
        * TODO: 当修改 plan 时可能会出现与闭包缓存值不一致的场景
        */
       metaFlexibleOptions.onBeforeApplyPlan(metaFlexibleOptions);
+
       /**
        * 如果已经发现当前方案已生效, 直接使用当前方案即可, 不再继续尝试后续方案
        */
@@ -434,6 +440,7 @@
         return;
       }
       if (metaFlexibleOptions.plans.length === 0) {
+        hasImpact = Impact.Yes;
         implementPlan(currentPlan);
         return;
       }
@@ -616,16 +623,19 @@
      */
     applyResponsePlan();
 
-    /**
-     * 在页面大小变更时触发更新
-     */
-    window.addEventListener('resize', (function () {
-      let timeoutId;
-      return () => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(applyResponsePlan, 300);
-      };
-    }()));
+
+    if (!metaFlexibleOptions.applyResponsePlanOnce) {
+      /**
+       * 在页面大小变更时触发更新
+       */
+      window.addEventListener('resize', (function () {
+        let timeoutId;
+        return () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(applyResponsePlan, 300);
+        };
+      }()));
+    }
 
     /**
      * onpageshow 事件类似于 onload 事件，onload 事件在页面第一次加载时触发，

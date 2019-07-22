@@ -197,12 +197,16 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
       }
     };
   </script>
-  <script src="//zhcdn01.xoyo.com/xassets/lib/meta-flexible/0.0.10-alpha/meta-flexible.min.js"></script>
+  <script src="//zhcdn01.xoyo.com/xassets/lib/meta-flexible/{VERSION}/meta-flexible.min.js"></script>
 ```
 
 这段代码主要应用于横屏场景, 通过 `onBeforeApplyPlan` 参数实现动态响应式变动, 当屏幕比例大于 1334 / 750 时, 基于高度进行适配. 当小于时基于宽度进行适配, 且在此时更新 remRatio 保证所有页面使用 rem 原生正确且平滑显示
 
 ## ChangeLog
+
+## 0.0.11-alpha (2019-07-11)
+
+* feat: 增加 `applyResponsePlanOnce` API 用于在仅 resize 一次, 主要用于确保横竖屏切换或输出框打开时导致 resize 出现的相关问题
 
 ## 0.0.10-alpha (2019-07-11)
 
