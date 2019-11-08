@@ -204,6 +204,10 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
 
 ## ChangeLog
 
+## 0.0.12 (2019-07-11)
+
+* fix: 修复 0.0.6 中导致 orientation listener 在一切响应式方案中都被生效的 bug
+
 ## 0.0.11-alpha (2019-07-11)
 
 * feat: 增加 `applyResponsePlanOnce` API 用于在仅 resize 一次, 主要用于确保横竖屏切换或输出框打开时导致 resize 出现的相关问题

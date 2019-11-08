@@ -348,27 +348,27 @@
   const setMetaViewpointTargetDensityDpi = (() => {
     let isAppended = false;
     let orientationChangeCounter = 0;
-    /**
-     * 处理在 ios iphone 6 (可能也涉及其他机型), 在翻转手机后当值 targetdensity 方案失效, window.innerWidth 异常, 不等于 designViewpoint
-     */
-    window.addEventListener('orientationchange', () => {
-      /**
-       * 且这个行为发生在翻转过程的某一个时间点, 所以需要等待若干时间, 目前测试等待setTimeout时间, 100 (无效), 150 (偶然), 200(可用), 250(较稳)
-       * 但不确定是否可能在性能低的时候翻转时间延长导致失效
-       */
-      setTimeout(() => {
-        if (window.innerWidth !== designViewpoint) {
-          orientationChangeCounter++;
-          if (orientationChangeCounter > 5) {
-            orientationChangeCounter = 0;
-          }
-          createOrUpdateMetaViewpoint(void 0, getMetaViewpointTargetDensityDpiContent(designViewpoint + orientationChangeCounter / 1000, enableViewpointFitForIphoneX));
-        }
-      }, 250);
-    });
     return () => {
       if (!isAppended) {
         createOrUpdateMetaViewpoint(void 0, getMetaViewpointTargetDensityDpiContent(designViewpoint, enableViewpointFitForIphoneX));
+        /**
+         * 处理在 ios iphone 6 (可能也涉及其他机型), 在翻转手机后当值 targetdensity 方案失效, window.innerWidth 异常, 不等于 designViewpoint
+         */
+        window.addEventListener('orientationchange', () => {
+          /**
+           * 且这个行为发生在翻转过程的某一个时间点, 所以需要等待若干时间, 目前测试等待setTimeout时间, 100 (无效), 150 (偶然), 200(可用), 250(较稳)
+           * 但不确定是否可能在性能低的时候翻转时间延长导致失效
+           */
+          setTimeout(() => {
+            if (window.innerWidth !== designViewpoint) {
+              orientationChangeCounter++;
+              if (orientationChangeCounter > 5) {
+                orientationChangeCounter = 0;
+              }
+              createOrUpdateMetaViewpoint(void 0, getMetaViewpointTargetDensityDpiContent(designViewpoint + orientationChangeCounter / 1000, enableViewpointFitForIphoneX));
+            }
+          }, 250);
+        });
         isAppended = true;
       }
     };
