@@ -56,7 +56,9 @@
   const RemResizeDependency = {
     Width: 'width',
     Height: 'height',
-    Auto: 'auto'
+    Auto: 'auto',
+    UseBiggerSize: 'useBiggerSize',
+    UseSmallerSize: 'useSmallerSize'
   };
 
   /**
@@ -526,8 +528,10 @@
       base = docEl.clientWidth;
     } else if (remResizeDependency === RemResizeDependency.Height) {
       base = docEl.clientHeight;
-    } else if (remResizeDependency === RemResizeDependency.Auto) {
+    } else if (remResizeDependency === RemResizeDependency.Auto || remResizeDependency === RemResizeDependency.UseSmallerSize) {
       base = Math.min(docEl.clientWidth, docEl.clientHeight);
+    } else if (remResizeDependency === RemResizeDependency.UseBiggerSize) {
+      base = Math.max(docEl.clientWidth, docEl.clientHeight);
     }
     if (hasResizeLimit) {
       if (base > remUpperResizeLimit) {
@@ -650,5 +654,11 @@
      * 尝试加入 Hairline 标记, 用于处理 border 1px的问题
      */
     tryAddHairLine();
+
+    /**
+     * 向外部曝露applyResponsePlan
+     * @type {Function}
+     */
+    apiMetaFlexibleOptions.applyResponsePlan = applyResponsePlan;
   }());
 }(window, document, window.__META_FLEXIBLE__ = window.__META_FLEXIBLE__ || {}));
