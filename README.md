@@ -152,6 +152,8 @@ Rem 为目前移动端开发主流方案，Viewpoint代指vw、vh方案。 其�
      * 当缩放基准依赖为 width 时, 页面会根据宽度缩放而变化 html root 的 fontSize 大小
      * 当缩放基准依赖为 height 时, 页面会根据高度缩放而变化 html root 的 fontSize 大小
      * 当缩放基准依赖为 auto 时, 页面会根据宽高比决定, 并选择较小的值作为基准值
+     * 当缩放基准依赖为 usaBiggerSize 时, 页面会根据宽高比决定, 并选择较大的值作为基准值
+     * 当缩放基准依赖为 useSmallerSize 时, 页面会根据宽高比决定, 并选择较小的值作为基准值
      * 默认: width
      */
     remResizeDependency: RemResizeDependency.Width,
