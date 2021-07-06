@@ -9,6 +9,8 @@
 所以, 在开发过程中, 我们可以直接根据设计稿, 如: `750px`, 直接切图, 无需过多考虑或使用 `postcss` 转换 `rem` 兼容等问题. 但由于目前市面上很多 ui 库都采用
 基于375px为基准的px方案, 为了能够直接使用这些 ui 库, 我们需要使用 `postcss` 将我们如 `750px` 基准的开发样式自动转换成 `375px`, 最后改动当前工具配置项 `designViewpoint: 375` 即可完美支持响应式.
 
+备注: `meta target density dpi` 方案为: `<meta name="viewport" content="width=750,target-densitydpi=device-dpi,user-scalable=no" />`
+
 ## 使用
 
 ```bash
