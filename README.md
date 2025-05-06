@@ -214,6 +214,10 @@ window.__META_FLEXIBLE__.applyResponsePlan()
 
 ## ChangeLog
 
+## 0.0.14 (2025-05-06)
+
+* feat:  user-agent 更加华为浏览器兼容
+
 ## 0.0.13 (2019-11-08)
 
 * feat:  增加RemResizeDependency UseBiggerSize UseSmallerSize
