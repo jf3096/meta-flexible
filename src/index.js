@@ -115,7 +115,7 @@
      * 判断是否是移动端
      * @return {boolean}
      */
-    isMobile: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+    isMobile: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|HuaweiBrowser|ArkWeb/i.test(navigator.userAgent),
     /**
      * 降级方案顺序
      */
